@@ -6,7 +6,7 @@ Windows 11 x64 desktop widget, written in WPF. Black and white themes; Compact, 
 
 Download the [Windows 11 x64 MSI installer](https://github.com/muhamadsyafiee/codex-usage/releases/latest). Release assets include the installer and its SHA-256 checksum. Exit the existing app before upgrading.
 
-Run `dist/CodexUsageWidget-1.3.1-x64.msi`, then open **Codex Usage Widget** from Start. Select **Sign in** and finish the official ChatGPT browser login. Remaining limits appear automatically. Use **···** to change layout/theme or sign out. **Hide** hides to the tray; double-click the tray icon to restore. **Exit** exits.
+Run `dist/CodexUsageWidget-1.3.2-x64.msi`, then open **Codex Usage Widget** from Start. Select **Sign in** and finish the official ChatGPT browser login. Remaining limits appear automatically. Use **···** to change layout/theme or sign out. **Hide** hides to the tray; double-click the tray icon to restore. **Exit** exits.
 
 Installer includes .NET and the official Codex CLI 0.154.0. No Node.js or separate Codex install is required. Internet and a ChatGPT account with available Codex limits are required. Installer is unsigned.
 
@@ -45,3 +45,5 @@ Minute refreshes update existing text and progress bars without rebuilding contr
 ## Branding (v1.3.1)
 
 The approved C logo is bundled into the installer welcome/progress screens, application executable, taskbar, notification tray, Start/desktop shortcuts and installed-apps entry. The expanded widget includes the centered attribution: "Made with ♥ by Syafiee Anis @ 2026". Source artwork and Windows icon variants are in `assets/`.
+
+Version 1.3.2 uses a friendly black C mascot with eyes and waving hands. An opaque white backing keeps it visible on dark Windows surfaces; the bold black body remains visible on light ones. The original white C assets are retained as history.

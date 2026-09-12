@@ -38,6 +38,20 @@ internal static class Program
             if (footer.Text != "Made with ♥ by Syafiee Anis @ 2026" || footer.TextAlignment != TextAlignment.Center) throw new Exception("Footer text/alignment");
             if (window.Icon == null || ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Icon == null) throw new Exception("Missing application/tray icon");
             Console.WriteLine("PASS centered heart footer and bundled window/tray icons");
+            using (var iconPixels = ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Icon!.ToBitmap())
+            {
+                var black = 0; var white = 0;
+                for (var y = 0; y < iconPixels.Height; y++)
+                for (var x = 0; x < iconPixels.Width; x++)
+                {
+                    var pixel = iconPixels.GetPixel(x, y);
+                    if (pixel.A > 200 && Math.Max(pixel.R, Math.Max(pixel.G, pixel.B)) < 100) black++;
+                    if (pixel.A > 200 && Math.Min(pixel.R, Math.Min(pixel.G, pixel.B)) > 170) white++;
+                }
+                var minimum = iconPixels.Width * iconPixels.Height / 10;
+                if (black < minimum || white < minimum) throw new Exception("Icon needs opaque dark and light regions for Windows themes");
+            }
+            Console.WriteLine("PASS loaded tray icon retains opaque dark and light contrast regions");
             var rows = new List<UsageWindow> { new("Codex", "5 hours", 75, null, "codex") };
             type.GetField("windows", flags)!.SetValue(window, rows);
             type.GetField("loggedIn", flags)!.SetValue(window, true);
