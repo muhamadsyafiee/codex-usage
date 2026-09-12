@@ -40,6 +40,7 @@ public sealed class Widget : Window
     private bool Docked => settings.Dock != "Bebas";
     private Rect dockArea;
     private bool dragging, checkingUpdate, installing;
+    private IInputElement? focusedElement;
     private System.Windows.Point dragStart;
     private double dragOffset;
     private readonly DispatcherTimer updateTimer = new() { Interval = TimeSpan.FromHours(6) };
@@ -62,7 +63,15 @@ public sealed class Widget : Window
         MouseLeave += (_, _) => { if (Docked) collapseTimer.Start(); };
         collapseTimer.Tick += (_, _) => { collapseTimer.Stop(); if (Docked && !IsMouseOver && !menuOpen && !dragging) { expanded = false; Render(); } };
         Deactivated += (_, _) => { if (Docked) collapseTimer.Start(); };
-        PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape && Docked) { expanded = false; Render(); e.Handled = true; } };
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape && Docked) { expanded = false; Render(); e.Handled = true; return; }
+            if (Docked && e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
+            {
+                var along = settings.Dock is "Kiri" or "Kanan" ? e.Key is Key.Up or Key.Down : e.Key is Key.Left or Key.Right;
+                if (along) { settings.DockOffset = Math.Clamp(settings.DockOffset + ((e.Key is Key.Right or Key.Down) ? 0.02 : -0.02), 0, 1); PositionDock(); Save(); e.Handled = true; }
+            }
+        };
         MouseRightButtonUp += (_, _) => ShowMenu();
         SizeChanged += (_, _) => PositionDock();
         tray = new System.Windows.Forms.NotifyIcon { Icon = System.Drawing.SystemIcons.Application, Text = "Codex Usage", Visible = true };
@@ -102,7 +111,8 @@ public sealed class Widget : Window
     private void Render()
     {
         Background = settings.Light ? Brushes.White : Brushes.Black; Foreground = settings.Light ? Brushes.Black : Brushes.White;
-        Opacity = double.IsFinite(settings.WidgetOpacity) ? Math.Clamp(settings.WidgetOpacity, 0.2, 1) : 0.7;
+        var preferredOpacity = double.IsFinite(settings.WidgetOpacity) ? Math.Clamp(settings.WidgetOpacity, 0.2, 1) : 0.7;
+        Opacity = Docked && expanded ? 1 : preferredOpacity;
         var frame = (Border)Content;
         frame.Padding = new Thickness(22);
         ((ScrollViewer)frame.Child).VerticalScrollBarVisibility = Docked && !expanded ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Auto;
@@ -111,6 +121,7 @@ public sealed class Widget : Window
         Height = double.NaN;
         Topmost = Docked || settings.Topmost;
         Width = settings.Layout == "Kompak" ? 320 : 400;
+        focusedElement = Keyboard.FocusedElement;
         body.Children.Clear();
         if (Docked && !expanded)
         {
@@ -120,7 +131,8 @@ public sealed class Widget : Window
             frame.Padding = new Thickness(0);
             body.HorizontalAlignment = System.Windows.HorizontalAlignment.Center;
             body.VerticalAlignment = VerticalAlignment.Center;
-            var handle = Text(availableUpdate == null ? "◈ CODEX" : "↑ UPDATE", 11);
+            var handle = new Button { Content = availableUpdate == null ? "CODEX" : "UPDATE", FontSize = 11, Padding = new Thickness(0), Background = Background, Foreground = Foreground, BorderBrush = Foreground, BorderThickness = new Thickness(0), Focusable = true, ToolTip = "Hover atau tekan Enter untuk lihat usage" };
+            handle.Click += (_, _) => { expanded = true; Render(); };
             handle.MouseLeftButtonDown += BeginDockDrag;
             handle.Margin = new Thickness(0);
             if (vertical) handle.LayoutTransform = new RotateTransform(-90);
@@ -130,7 +142,7 @@ public sealed class Widget : Window
         }
         body.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
         body.VerticalAlignment = VerticalAlignment.Top;
-        var header = Text("◈   CODEX / USAGE", 13); header.FontWeight = FontWeights.SemiBold; header.Cursor = System.Windows.Input.Cursors.SizeAll;
+        var header = Text("CODEX / USAGE", 13); header.FontWeight = FontWeights.SemiBold; header.Cursor = System.Windows.Input.Cursors.SizeAll;
         header.ToolTip = "Seret untuk pindahkan widget · klik kanan untuk tetapan"; header.MouseLeftButtonDown += (_, e) => { if (Docked) BeginDockDrag(header, e); else if (e.ButtonState == MouseButtonState.Pressed) { DragMove(); Save(); } }; body.Children.Add(header);
         if (settings.Layout != "Kompak") body.Children.Add(Text(account));
         if (!loggedIn)
@@ -161,6 +173,7 @@ public sealed class Widget : Window
         controls.Children.Add(Action("Refresh", Refresh));
         controls.Children.Add(Action("···", () => { ShowMenu(); return Task.CompletedTask; }));
         controls.Children.Add(Action("Sorok", () => { Hide(); return Task.CompletedTask; })); body.Children.Add(controls);
+        if (focusedElement is UIElement element && element.IsVisible) Dispatcher.BeginInvoke(() => element.Focus(), DispatcherPriority.Input);
         PositionDock();
     }
     private void UpdateDockArea()
@@ -222,6 +235,7 @@ public sealed class Widget : Window
     {
         if (checkingUpdate || installing) return;
         checkingUpdate = true;
+        if (manual) { status = "Menyemak update…"; Render(); }
         try
         {
             var found = await updates.Check();
@@ -313,7 +327,7 @@ public sealed class Widget : Window
     private async Task Refresh()
     {
         if (busy) return;
-        busy = true; Render();
+        busy = true; status = "Mengemas kini baki usage…"; Render();
         try
         {
             await client.Start();

@@ -40,7 +40,7 @@ public sealed class CodexClient : IDisposable
                 else if (root.TryGetProperty("method", out var method)) Notification?.Invoke(method.GetString()!, root.TryGetProperty("params", out var p) ? p.Clone() : default);
             }
         }
-        catch (Exception) { /* Pending callers receive a safe connection error below. */ }
+        catch (Exception) { }
         finally
         {
             foreach (var pair in pending) if (pending.TryRemove(pair.Key, out var item)) item.TrySetException(new IOException("Sambungan Codex terputus. Cuba refresh."));
