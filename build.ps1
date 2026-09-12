@@ -10,3 +10,4 @@ Invoke-WebRequest 'https://raw.githubusercontent.com/openai/codex/rust-v0.154.0/
 if (!(Test-Path '.tools/wix.exe')) { dotnet tool install wix --tool-path .tools --version 6.0.2 }
 & .tools/wix.exe build installer/Package.wxs -arch x64 -d "PublishDir=$PSScriptRoot/dist/app" -o dist/CodexUsageWidget-1.3.4-x64.msi
 if ($LASTEXITCODE) { throw 'MSI build failed' }
+(Get-FileHash dist/CodexUsageWidget-1.3.4-x64.msi -Algorithm SHA256).Hash | Set-Content -NoNewline dist/SHA256-1.3.4.txt

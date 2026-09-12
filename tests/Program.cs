@@ -44,3 +44,5 @@ Check(reordered.Select(w => w.BucketId).SequenceEqual(new[] { "codex", "codex", 
 Check(reordered[0].Label == "5 hours" && reordered[1].Label == "Weekly", "English duration labels");
 Check(FeedbackService.FormResponseUrl.Contains("docs.google.com/forms/d/e/") && FeedbackService.FeedbackEntry == "entry.412582170", "Feedback form endpoint is configured");
 Check(FeedbackService.BuildDeviceInfo().Contains("Architecture:") && FeedbackService.BuildDeviceInfo().Contains("App version:"), "Feedback device info is minimal and labeled");
+var checksum = new string('A', 64);
+Check(UpdateService.ParseChecksum($"{checksum}  CodexUsageWidget-1.3.4-x64.msi") == checksum, "Accept standard checksum manifest");

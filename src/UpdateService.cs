@@ -35,7 +35,7 @@ public sealed class UpdateService
     }
     public async Task<string> Download(ReleaseUpdate update)
     {
-        var hash = (await Http.GetStringAsync(update.ChecksumUrl)).Trim();
+        var hash = ParseChecksum(await Http.GetStringAsync(update.ChecksumUrl));
         if (hash.Length != 64 || !hash.All(Uri.IsHexDigit)) throw new IOException("Invalid checksum.");
         var directory = Path.Combine(Path.GetTempPath(), "CodexUsageUpdates", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
@@ -52,4 +52,7 @@ public sealed class UpdateService
         }
         catch { File.Delete(file); throw; }
     }
+    internal static string ParseChecksum(string content) => content
+        .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+        .FirstOrDefault()?.Trim('\uFEFF') ?? string.Empty;
 }
