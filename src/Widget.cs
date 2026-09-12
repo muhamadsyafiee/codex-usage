@@ -22,6 +22,7 @@ public sealed class Preferences
     public string? Monitor { get; set; }
     public double DockOffset { get; set; } = 0.5;
     public double WidgetOpacity { get; set; } = 0.7;
+    public bool RunAtWindowsLogin { get; set; }
 }
 public sealed class Widget : Window
 {
@@ -52,6 +53,7 @@ public sealed class Widget : Window
     public Widget()
     {
         try { if (File.Exists(settingsPath)) settings = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(settingsPath)) ?? new(); } catch { }
+        try { settings.RunAtWindowsLogin = StartupService.IsEnabled(); } catch { }
         Title = "Codex Usage"; WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.NoResize;
         var iconUri = new Uri("pack://application:,,,/CodexUsage;component/Assets/app.ico");
         Icon = System.Windows.Media.Imaging.BitmapFrame.Create(iconUri);
@@ -340,6 +342,19 @@ public sealed class Widget : Window
         theme.Click += (_, _) => { settings.Light = !settings.Light; Save(); Render(); }; menu.Items.Add(theme);
         var pin = new MenuItem { Header = "Always on top", IsCheckable = true, IsChecked = Topmost, IsEnabled = !Docked };
         pin.Click += (_, _) => { settings.Topmost = Topmost = !Topmost; Save(); }; menu.Items.Add(pin);
+        var startup = new MenuItem { Header = "Run at Windows login", IsCheckable = true, IsChecked = settings.RunAtWindowsLogin };
+        startup.Click += (_, _) =>
+        {
+            var enabled = !settings.RunAtWindowsLogin;
+            try
+            {
+                StartupService.SetEnabled(enabled);
+                settings.RunAtWindowsLogin = enabled;
+                Save();
+            }
+            catch { status = "Could not update Windows login setting."; Render(); }
+        };
+        menu.Items.Add(startup);
         var logout = new MenuItem { Header = "Sign out", IsEnabled = loggedIn };
         logout.Click += async (_, _) =>
         {
