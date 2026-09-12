@@ -27,6 +27,12 @@ internal static class Program
             type.GetMethod("Render", flags)!.Invoke(window, null);
             if (window.Width != 400 || window.SizeToContent != SizeToContent.Height) throw new Exception("Floating restore");
             Console.WriteLine("PASS WPF floating layout restored");
+            if (Math.Abs(window.Opacity - 0.7) > 0.001 || !window.AllowsTransparency) throw new Exception("Default opacity");
+            Console.WriteLine("PASS WPF default 70% opacity");
+            type.GetField("settings", flags)!.SetValue(window, new Preferences { WidgetOpacity = 0.42 });
+            type.GetMethod("Render", flags)!.Invoke(window, null);
+            if (Math.Abs(window.Opacity - 0.42) > 0.001) throw new Exception("Custom opacity");
+            Console.WriteLine("PASS WPF custom opacity");
         }
         finally
         {

@@ -1,7 +1,11 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Package Name="Codex Usage Widget" Manufacturer="Codex Usage Widget" Version="1.1.0" UpgradeCode="766915ED-C573-4E04-A82B-9AEC869568A9" Scope="perUser">
+  <Package Name="Codex Usage Widget" Manufacturer="Codex Usage Widget" Version="1.2.0" UpgradeCode="766915ED-C573-4E04-A82B-9AEC869568A9" Scope="perUser">
     <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="medium" />
+    <CustomAction Id="LaunchWidget" Directory="INSTALLFOLDER" ExeCommand="&quot;[INSTALLFOLDER]CodexUsage.exe&quot; --after-update" Return="asyncNoWait" />
+    <InstallExecuteSequence>
+      <Custom Action="LaunchWidget" After="InstallFinalize" Condition="NOT Installed AND NOT REMOVE AND UILevel &gt;= 3" />
+    </InstallExecuteSequence>
     <StandardDirectory Id="LocalAppDataFolder">
       <Directory Id="INSTALLFOLDER" Name="CodexUsageWidget">
         <Files Include="$(var.PublishDir)\**" />

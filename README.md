@@ -6,13 +6,21 @@ Windows 11 x64 desktop widget, written in WPF. Black and white themes; Compact, 
 
 Download the [Windows 11 x64 MSI installer](https://github.com/muhamadsyafiee/codex-usage/releases/latest). Release assets include the installer and its SHA-256 checksum. Exit the existing app before upgrading.
 
-Run `dist/CodexUsageWidget-1.1.0-x64.msi`, then open **Codex Usage Widget** from Start. Select **Log masuk** and finish the official ChatGPT browser login. Remaining limits appear automatically. Use **···** to change layout/theme or sign out. **Sorok** hides to the tray; double-click the tray icon to restore. **Keluar** exits.
+Run `dist/CodexUsageWidget-1.2.0-x64.msi`, then open **Codex Usage Widget** from Start. Select **Log masuk** and finish the official ChatGPT browser login. Remaining limits appear automatically. Use **···** to change layout/theme or sign out. **Sorok** hides to the tray; double-click the tray icon to restore. **Keluar** exits.
 
 Installer includes .NET and the official Codex CLI 0.154.0. No Node.js or separate Codex install is required. Internet and a ChatGPT account with available Codex limits are required. Installer is unsigned.
 
 ## Dock mode (v1.1)
 
 Open **··· → Dock skrin** and choose **Kiri**, **Kanan**, **Atas**, or **Bawah**. A small CODEX tab stays at the chosen edge. Hover to reveal usage; moving away collapses the panel after 450 ms. Right-click the tab to change its settings. Choose **Bebas** to restore the floating position. Dock mode stays on top and uses the monitor work area, keeping clear of the taskbar. To move to another monitor, switch to Bebas, drag there, then dock again. Layout, theme, login and floating position survive upgrades. Exit the old app before running the new MSI.
+
+## Dock movement, opacity and updates (v1.2)
+
+Drag the CODEX heading along the selected screen edge to reposition the dock. Position is stored as a relative offset, so expansion and collapse keep the same anchor. Choose another edge through **Dock skrin**. Use **Opacity** in the menu to select 20–100%; the default is 70%.
+
+The app checks this repository's latest stable GitHub Release at startup and every six hours. A tray notification, UPDATE tab and update button announce a newer version. **Semak update** checks manually. Selecting Update downloads the x64 MSI and verifies its published SHA-256 checksum before opening the normal Windows Installer interface and exiting the widget. A successful interactive installation opens the widget automatically with its panel expanded. A cancelled or failed installation does not auto-launch; reopen the existing app from Start. Fully silent deployments do not launch UI.
+
+Version 1.1 users need to download and install 1.2 manually once. Future releases must include both `CodexUsageWidget-VERSION-x64.msi` and `SHA256-VERSION.txt` before publication. Use a draft release while uploading so clients never receive an incomplete release. Checks require internet access; background failures are quiet and retried on the next scheduled check. Manual checks show an error if GitHub cannot be reached.
 
 ## Data and authentication
 

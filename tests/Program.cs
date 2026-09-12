@@ -22,3 +22,20 @@ foreach (var edge in new[] { "Kiri", "Kanan", "Atas", "Bawah" })
     Check(large.Left >= -1920 && large.Top >= 40 && large.Left + 400 <= 0 && large.Top + 600 <= 1080, edge + " stays in monitor work area");
 }
 Check(DockGeometry.Place("Bawah", 0, 0, 1920, 1040, 400, 600).Top == 440, "Bottom dock respects taskbar work area");
+foreach (var offset in new[] { 0.0, 0.1, 0.8, 1.0 })
+foreach (var edge in new[] { "Kiri", "Kanan", "Atas", "Bawah" })
+{
+    var vertical = edge is "Kiri" or "Kanan";
+    var small = DockGeometry.Place(edge, 0, 0, 1920, 1040, vertical ? 32 : 112, vertical ? 112 : 32, offset);
+    var large = DockGeometry.Place(edge, 0, 0, 1920, 1040, 400, 600, offset);
+    Check(small.Left >= large.Left && small.Top >= large.Top && small.Left + (vertical ? 32 : 112) <= large.Left + 400 && small.Top + (vertical ? 112 : 32) <= large.Top + 600, $"{edge} offset {offset} keeps hover inside panel");
+}
+var release = """{"draft":false,"prerelease":false,"tag_name":"v1.3.0","assets":[{"name":"CodexUsageWidget-1.3.0-x64.msi","browser_download_url":"https://github.com/muhamadsyafiee/codex-usage/releases/download/v1.3.0/app.msi"},{"name":"SHA256-1.3.0.txt","browser_download_url":"https://github.com/muhamadsyafiee/codex-usage/releases/download/v1.3.0/hash.txt"}]}""";
+ReleaseUpdate? ReadRelease(string json, string current) => UpdateService.Parse(JsonDocument.Parse(json).RootElement, Version.Parse(current));
+Check(ReadRelease(release, "1.2.0")?.Version == new Version(1,3,0), "Detect newer release");
+Check(ReadRelease(release, "1.3.0") == null && ReadRelease(release, "2.0.0") == null, "Never install same or older release");
+Check(ReadRelease(release.Replace("\"prerelease\":false", "\"prerelease\":true"), "1.2.0") == null, "Ignore prerelease");
+Check(ReadRelease(release.Replace("SHA256-1.3.0.txt", "missing.txt"), "1.2.0") == null, "Require checksum asset");
+var rejected = false;
+try { ReadRelease(release.Replace("https://github.com/", "https://example.com/"), "1.2.0"); } catch (System.IO.IOException) { rejected = true; }
+Check(rejected, "Reject assets outside configured repository");

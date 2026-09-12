@@ -20,6 +20,8 @@ public sealed class Preferences
     public double Top { get; set; } = 80;
     public string Dock { get; set; } = "Bebas";
     public string? Monitor { get; set; }
+    public double DockOffset { get; set; } = 0.5;
+    public double WidgetOpacity { get; set; } = 0.7;
 }
 public sealed class Widget : Window
 {
@@ -37,18 +39,28 @@ public sealed class Widget : Window
     private readonly DispatcherTimer collapseTimer = new() { Interval = TimeSpan.FromMilliseconds(450) };
     private bool Docked => settings.Dock != "Bebas";
     private Rect dockArea;
+    private bool dragging, checkingUpdate, installing;
+    private System.Windows.Point dragStart;
+    private double dragOffset;
+    private readonly DispatcherTimer updateTimer = new() { Interval = TimeSpan.FromHours(6) };
+    private readonly UpdateService updates = new();
+    private ReleaseUpdate? availableUpdate;
     public Widget()
     {
         try { if (File.Exists(settingsPath)) settings = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(settingsPath)) ?? new(); } catch { }
         Title = "Codex Usage"; WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.NoResize;
+        AllowsTransparency = true;
         SizeToContent = SizeToContent.Height; FontFamily = new System.Windows.Media.FontFamily("Segoe UI");
         Topmost = settings.Topmost; Left = Math.Clamp(settings.Left, SystemParameters.VirtualScreenLeft, Math.Max(SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenWidth - 420));
         Top = Math.Clamp(settings.Top, SystemParameters.VirtualScreenTop, Math.Max(SystemParameters.VirtualScreenTop, SystemParameters.VirtualScreenHeight - 300));
         Content = new Border { BorderThickness = new Thickness(1), BorderBrush = Brushes.Gray, Padding = new Thickness(22), Child = new ScrollViewer { Content = body, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled } };
         if (!new[] { "Bebas", "Kiri", "Kanan", "Atas", "Bawah" }.Contains(settings.Dock)) settings.Dock = "Bebas";
-        MouseEnter += (_, _) => { collapseTimer.Stop(); if (Docked && !expanded) { expanded = true; Render(); } };
+        MouseEnter += (_, _) => { collapseTimer.Stop(); if (Docked && !expanded && !dragging) { expanded = true; Render(); } };
+        MouseMove += MoveDock;
+        MouseLeftButtonUp += (_, _) => EndDockDrag();
+        LostMouseCapture += (_, _) => { if (dragging) EndDockDrag(); };
         MouseLeave += (_, _) => { if (Docked) collapseTimer.Start(); };
-        collapseTimer.Tick += (_, _) => { collapseTimer.Stop(); if (Docked && !IsMouseOver && !menuOpen) { expanded = false; Render(); } };
+        collapseTimer.Tick += (_, _) => { collapseTimer.Stop(); if (Docked && !IsMouseOver && !menuOpen && !dragging) { expanded = false; Render(); } };
         Deactivated += (_, _) => { if (Docked) collapseTimer.Start(); };
         PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape && Docked) { expanded = false; Render(); e.Handled = true; } };
         MouseRightButtonUp += (_, _) => ShowMenu();
@@ -57,6 +69,8 @@ public sealed class Widget : Window
         tray.DoubleClick += (_, _) => Dispatcher.Invoke(() => { Show(); Activate(); });
         var menu = new System.Windows.Forms.ContextMenuStrip();
         menu.Items.Add("Buka widget", null, (_, _) => Dispatcher.Invoke(() => { Show(); Activate(); }));
+        menu.Items.Add("Semak update", null, (_, _) => Dispatcher.Invoke(async () => await CheckUpdate(true)));
+        tray.BalloonTipClicked += (_, _) => Dispatcher.Invoke(() => { Show(); expanded = true; Render(); Activate(); });
         menu.Items.Add("Keluar", null, (_, _) => Dispatcher.Invoke(Close)); tray.ContextMenuStrip = menu;
         timer.Tick += async (_, _) => await Refresh();
         client.Notification += (method, data) => Dispatcher.BeginInvoke(async () =>
@@ -68,8 +82,9 @@ public sealed class Widget : Window
                 else { status = "Login tidak berjaya. Cuba semula."; Render(); }
             }
         });
-        Loaded += async (_, _) => { UpdateDockArea(); PositionDock(); await Refresh(); timer.Start(); };
-        Closed += (_, _) => { timer.Stop(); collapseTimer.Stop(); Save(); tray.Dispose(); client.Dispose(); System.Windows.Application.Current.Shutdown(); };
+        updateTimer.Tick += async (_, _) => await CheckUpdate(false);
+        Loaded += async (_, _) => { UpdateDockArea(); PositionDock(); await Refresh(); timer.Start(); updateTimer.Start(); await CheckUpdate(false); };
+        Closed += (_, _) => { timer.Stop(); updateTimer.Stop(); collapseTimer.Stop(); Save(); tray.Dispose(); client.Dispose(); System.Windows.Application.Current.Shutdown(); };
         Render();
     }
     private void Save()
@@ -87,6 +102,7 @@ public sealed class Widget : Window
     private void Render()
     {
         Background = settings.Light ? Brushes.White : Brushes.Black; Foreground = settings.Light ? Brushes.Black : Brushes.White;
+        Opacity = double.IsFinite(settings.WidgetOpacity) ? Math.Clamp(settings.WidgetOpacity, 0.2, 1) : 0.7;
         var frame = (Border)Content;
         frame.Padding = new Thickness(22);
         ((ScrollViewer)frame.Child).VerticalScrollBarVisibility = Docked && !expanded ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Auto;
@@ -104,7 +120,8 @@ public sealed class Widget : Window
             frame.Padding = new Thickness(0);
             body.HorizontalAlignment = System.Windows.HorizontalAlignment.Center;
             body.VerticalAlignment = VerticalAlignment.Center;
-            var handle = Text("◈ CODEX", 11);
+            var handle = Text(availableUpdate == null ? "◈ CODEX" : "↑ UPDATE", 11);
+            handle.MouseLeftButtonDown += BeginDockDrag;
             handle.Margin = new Thickness(0);
             if (vertical) handle.LayoutTransform = new RotateTransform(-90);
             body.Children.Add(handle);
@@ -114,7 +131,7 @@ public sealed class Widget : Window
         body.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
         body.VerticalAlignment = VerticalAlignment.Top;
         var header = Text("◈   CODEX / USAGE", 13); header.FontWeight = FontWeights.SemiBold; header.Cursor = System.Windows.Input.Cursors.SizeAll;
-        header.ToolTip = Docked ? "Klik kanan untuk tukar kedudukan dock" : "Seret untuk pindahkan widget"; header.MouseLeftButtonDown += (_, e) => { if (!Docked && e.ButtonState == MouseButtonState.Pressed) { DragMove(); Save(); } }; body.Children.Add(header);
+        header.ToolTip = "Seret untuk pindahkan widget · klik kanan untuk tetapan"; header.MouseLeftButtonDown += (_, e) => { if (Docked) BeginDockDrag(header, e); else if (e.ButtonState == MouseButtonState.Pressed) { DragMove(); Save(); } }; body.Children.Add(header);
         if (settings.Layout != "Kompak") body.Children.Add(Text(account));
         if (!loggedIn)
         {
@@ -138,6 +155,7 @@ public sealed class Widget : Window
             body.Children.Add(card);
         }
         body.Children.Add(Text(status, 11));
+        if (availableUpdate != null) body.Children.Add(Action(installing ? "Memuat turun update…" : $"Update v{availableUpdate.Version}", InstallUpdate));
         var controls = new WrapPanel();
         if (!loggedIn) controls.Children.Add(Action(loginId == null ? "Log masuk" : "Batal login", Login));
         controls.Children.Add(Action("Refresh", Refresh));
@@ -161,7 +179,7 @@ public sealed class Widget : Window
         UpdateDockArea();
         MaxHeight = dockArea.Height;
         var height = SizeToContent == SizeToContent.Manual ? Height : ActualHeight;
-        var location = DockGeometry.Place(settings.Dock, dockArea.X, dockArea.Y, dockArea.Width, dockArea.Height, Width, height);
+        var location = DockGeometry.Place(settings.Dock, dockArea.X, dockArea.Y, dockArea.Width, dockArea.Height, Width, height, settings.DockOffset);
         Left = location.Left; Top = location.Top;
     }
     private void SetDock(string edge)
@@ -171,6 +189,65 @@ public sealed class Widget : Window
         settings.Dock = edge; expanded = false;
         if (!Docked) { Left = settings.Left; Top = settings.Top; }
         Save(); Render();
+    }
+    private void BeginDockDrag(object sender, MouseButtonEventArgs e)
+    {
+        if (!Docked) return;
+        dragging = true;
+        dragStart = PointToScreen(e.GetPosition(this));
+        dragOffset = settings.DockOffset;
+        collapseTimer.Stop(); CaptureMouse(); e.Handled = true;
+    }
+    private void MoveDock(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (!dragging) return;
+        var point = PointToScreen(e.GetPosition(this));
+        var scale = VisualTreeHelper.GetDpi(this);
+        var vertical = settings.Dock is "Kiri" or "Kanan";
+        var travel = vertical ? dockArea.Height - ActualHeight : dockArea.Width - ActualWidth;
+        var delta = vertical ? (point.Y - dragStart.Y) / scale.DpiScaleY : (point.X - dragStart.X) / scale.DpiScaleX;
+        settings.DockOffset = Math.Clamp(dragOffset + delta / Math.Max(1, travel), 0, 1);
+        PositionDock();
+    }
+    private void EndDockDrag()
+    {
+        if (!dragging) return;
+        dragging = false; ReleaseMouseCapture(); Save(); collapseTimer.Start();
+    }
+    public void Reveal()
+    {
+        Show(); expanded = true; Render(); Activate();
+    }
+    private async Task CheckUpdate(bool manual)
+    {
+        if (checkingUpdate || installing) return;
+        checkingUpdate = true;
+        try
+        {
+            var found = await updates.Check();
+            var notify = found != null && found.Version != availableUpdate?.Version;
+            availableUpdate = found;
+            if (notify) tray.ShowBalloonTip(8000, "Update Codex Usage", $"Versi {found!.Version} tersedia. Klik untuk buka widget.", System.Windows.Forms.ToolTipIcon.Info);
+            if (manual) { status = found == null ? "Anda menggunakan versi terkini." : $"Versi {found.Version} tersedia."; Reveal(); }
+            else Render();
+        }
+        catch { if (manual) { status = "Semakan update gagal. Semak internet dan cuba semula."; Reveal(); } }
+        finally { checkingUpdate = false; }
+    }
+    private async Task InstallUpdate()
+    {
+        if (installing || availableUpdate == null) return;
+        installing = true; Render();
+        try
+        {
+            var path = await updates.Download(availableUpdate);
+            var start = new ProcessStartInfo("msiexec.exe") { UseShellExecute = true };
+            start.Arguments = $"/i \"{path}\" /norestart";
+            _ = Process.Start(start) ?? throw new IOException("Installer gagal dimulakan.");
+            Close();
+        }
+        catch { status = "Update gagal. Cuba semula melalui menu update."; }
+        finally { installing = false; if (IsLoaded) Render(); }
     }
     private void ShowMenu()
     {
@@ -185,6 +262,12 @@ public sealed class Widget : Window
             docking.Items.Add(option);
         }
         menu.Items.Add(docking);
+        var opacity = new MenuItem { Header = "Opacity" };
+        var slider = new Slider { Minimum = 20, Maximum = 100, Value = Opacity * 100, TickFrequency = 1, IsSnapToTickEnabled = true, Width = 180, Margin = new Thickness(12), ToolTip = $"{Opacity:P0}" };
+        slider.ValueChanged += (_, _) => { settings.WidgetOpacity = slider.Value / 100; Opacity = settings.WidgetOpacity; slider.ToolTip = $"{slider.Value:0}%"; Save(); };
+        opacity.Items.Add(new MenuItem { Header = slider, StaysOpenOnClick = true }); menu.Items.Add(opacity);
+        var update = new MenuItem { Header = availableUpdate == null ? "Semak update" : $"Update v{availableUpdate.Version}", IsEnabled = !installing };
+        update.Click += async (_, _) => { if (availableUpdate == null) await CheckUpdate(true); else await InstallUpdate(); }; menu.Items.Add(update);
         foreach (var layout in new[] { "Kompak", "Kad", "Terperinci" })
         {
             var item = new MenuItem { Header = layout, IsCheckable = true, IsChecked = settings.Layout == layout };
