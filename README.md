@@ -46,4 +46,4 @@ Minute refreshes update existing text and progress bars without rebuilding contr
 
 The approved C logo is bundled into the installer welcome/progress screens, application executable, taskbar, notification tray, Start/desktop shortcuts and installed-apps entry. The expanded widget includes the centered attribution: "Made with ♥ by Syafiee Anis @ 2026". Source artwork and Windows icon variants are in `assets/`.
 
-Version 1.3.2 uses a friendly black C mascot with eyes and waving hands. An opaque white backing keeps it visible on dark Windows surfaces; the bold black body remains visible on light ones. The original white C assets are retained as history.
+Version 1.3.3 uses a friendly black C mascot with eyes and waving hands. An opaque white backing keeps it visible on dark Windows surfaces; the bold black body remains visible on light ones. The settings control uses a gear icon. The original white C assets are retained as history.

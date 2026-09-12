@@ -184,7 +184,12 @@ public sealed class Widget : Window
         var controls = new WrapPanel();
         if (!loggedIn) controls.Children.Add(Action(loginId == null ? "Sign in" : "Cancel sign-in", Login));
         controls.Children.Add(Action("Refresh", () => Refresh()));
-        controls.Children.Add(Action("···", () => { ShowMenu(); return Task.CompletedTask; }));
+        var settingsButton = Action("⚙", () => { ShowMenu(); return Task.CompletedTask; });
+        settingsButton.ToolTip = "Settings";
+        System.Windows.Automation.AutomationProperties.SetName(settingsButton, "Settings");
+        settingsButton.FontSize = 15;
+        settingsButton.Padding = new Thickness(8, 3, 8, 3);
+        controls.Children.Add(settingsButton);
         controls.Children.Add(Action("Hide", () => { ShowInTaskbar = false; Hide(); return Task.CompletedTask; })); body.Children.Add(controls);
         var footer = Text("Made with ♥ by Syafiee Anis @ 2026", 11);
         footer.TextAlignment = TextAlignment.Center;

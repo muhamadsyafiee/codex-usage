@@ -36,6 +36,9 @@ internal static class Program
             var panel = (System.Windows.Controls.StackPanel)type.GetField("body", flags)!.GetValue(window)!;
             var footer = panel.Children.OfType<System.Windows.Controls.TextBlock>().Last();
             if (footer.Text != "Made with ♥ by Syafiee Anis @ 2026" || footer.TextAlignment != TextAlignment.Center) throw new Exception("Footer text/alignment");
+            var settingsControl = panel.Children.OfType<System.Windows.Controls.WrapPanel>().Single().Children.OfType<System.Windows.Controls.Button>().FirstOrDefault(b => b.Content?.ToString() == "⚙");
+            if (settingsControl == null || System.Windows.Automation.AutomationProperties.GetName(settingsControl) != "Settings") throw new Exception("Missing accessible settings gear");
+            Console.WriteLine("PASS settings gear icon and accessible name");
             if (window.Icon == null || ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Icon == null) throw new Exception("Missing application/tray icon");
             Console.WriteLine("PASS centered heart footer and bundled window/tray icons");
             using (var iconPixels = ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Icon!.ToBitmap())
