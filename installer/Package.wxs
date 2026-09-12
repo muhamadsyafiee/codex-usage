@@ -1,0 +1,18 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Codex Usage Widget" Manufacturer="Codex Usage Widget" Version="1.1.0" UpgradeCode="766915ED-C573-4E04-A82B-9AEC869568A9" Scope="perUser">
+    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="medium" />
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="INSTALLFOLDER" Name="CodexUsageWidget">
+        <Files Include="$(var.PublishDir)\**" />
+        <Component Id="Shortcuts" Guid="F1F08012-538C-4D8A-81C2-38CD610A134C">
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Codex Usage Widget" Target="[INSTALLFOLDER]CodexUsage.exe" WorkingDirectory="INSTALLFOLDER" />
+          <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="Codex Usage Widget" Target="[INSTALLFOLDER]CodexUsage.exe" WorkingDirectory="INSTALLFOLDER" />
+          <RegistryValue Root="HKCU" Key="Software\CodexUsageWidget" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="DesktopFolder" />
+  </Package>
+</Wix>
