@@ -36,6 +36,10 @@ Requires Windows, .NET 10 SDK and Node.js/npm. Run `./build.ps1`. Build installs
 
 Authentication completion and account-backed usage must be checked with an interactive user login. No account credentials are included in this repository or installer.
 
+## Download tracking
+
+GitHub counts downloads per Release asset. Run `./scripts/Get-DownloadStats.ps1` in PowerShell to list MSI downloads for every release and totals. Run `./scripts/Get-DownloadStats.ps1 -Tag v1.3.3` for one release. The report counts MSI downloads, not installs or active users. The checksum asset is reported in the all-asset total. This app collects no usage telemetry.
+
 ## Stable background refresh (v1.3)
 
 English is the default UI language. Codex 5-hour usage appears first, then Codex weekly usage, then GPT reserve when returned by the server; other buckets follow. No missing quotas are fabricated. Existing saved layout and dock choices remain compatible.
