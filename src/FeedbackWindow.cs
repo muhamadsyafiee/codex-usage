@@ -38,21 +38,35 @@ public sealed class FeedbackWindow : Window
         Foreground = foreground;
         FontFamily = new FontFamily("Segoe UI");
 
-        var panel = new StackPanel { Margin = new Thickness(22) };
-        panel.Children.Add(new TextBlock
+        var panel = new Grid { Margin = new Thickness(22) };
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        var title = new TextBlock
         {
             Text = "Help improve Codex Usage Widget",
             FontSize = 20,
             FontWeight = FontWeights.SemiBold,
             Foreground = foreground,
             Margin = new Thickness(0, 0, 0, 6)
-        });
-        panel.Children.Add(Label("Tell us what happened or what you would like to see next."));
+        };
+        panel.Children.Add(title);
+        var intro = Label("Tell us what happened or what you would like to see next.");
+        Grid.SetRow(intro, 1);
+        panel.Children.Add(intro);
 
-        panel.Children.Add(new TextBlock { Text = "Your feedback", Foreground = foreground, Margin = new Thickness(0, 12, 0, 5) });
+        var feedbackLabel = new TextBlock { Text = "Your feedback", Foreground = foreground, Margin = new Thickness(0, 12, 0, 5) };
+        Grid.SetRow(feedbackLabel, 2);
+        panel.Children.Add(feedbackLabel);
         feedbackBox = new TextBox
         {
-            MinHeight = 140,
+            MinHeight = 90,
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
@@ -63,6 +77,7 @@ public sealed class FeedbackWindow : Window
             BorderThickness = new Thickness(1)
         };
         AutomationProperties.SetName(feedbackBox, "Feedback message");
+        Grid.SetRow(feedbackBox, 3);
         panel.Children.Add(feedbackBox);
 
         deviceInfo = new CheckBox
@@ -73,11 +88,15 @@ public sealed class FeedbackWindow : Window
             Margin = new Thickness(0, 12, 0, 3)
         };
         AutomationProperties.SetName(deviceInfo, "Include device information");
+        Grid.SetRow(deviceInfo, 4);
         panel.Children.Add(deviceInfo);
-        panel.Children.Add(Label("No name, hostname or files are sent."));
+        var privacy = Label("No name, hostname or files are sent.");
+        Grid.SetRow(privacy, 5);
+        panel.Children.Add(privacy);
 
         statusText = Label("");
         statusText.Margin = new Thickness(0, 8, 0, 2);
+        Grid.SetRow(statusText, 6);
         panel.Children.Add(statusText);
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
@@ -88,6 +107,7 @@ public sealed class FeedbackWindow : Window
         submitButton.Click += async (_, _) => await Submit();
         buttons.Children.Add(cancel);
         buttons.Children.Add(submitButton);
+        Grid.SetRow(buttons, 7);
         panel.Children.Add(buttons);
 
         Content = new Border

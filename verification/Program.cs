@@ -41,6 +41,12 @@ internal static class Program
             var feedbackControl = panel.Children.OfType<System.Windows.Controls.WrapPanel>().Single().Children.OfType<System.Windows.Controls.Button>().FirstOrDefault(b => b.Content?.ToString() == "Feedback");
             if (feedbackControl == null || System.Windows.Automation.AutomationProperties.GetName(feedbackControl) != "Send feedback") throw new Exception("Missing accessible feedback button");
             Console.WriteLine("PASS settings gear and feedback controls have accessible names");
+            var feedbackWindow = new FeedbackWindow(false);
+            var feedbackGrid = (System.Windows.Controls.Grid)((System.Windows.Controls.Border)feedbackWindow.Content).Child;
+            var submit = feedbackGrid.Children.OfType<System.Windows.Controls.StackPanel>().Single().Children.OfType<System.Windows.Controls.Button>().Single(b => b.Content?.ToString() == "Submit feedback");
+            if (System.Windows.Controls.Grid.GetRow(submit.Parent as System.Windows.Controls.StackPanel) != 7) throw new Exception("Feedback submit button is not in bottom row");
+            if (feedbackGrid.Children.OfType<System.Windows.Controls.CheckBox>().Single().IsChecked != true) throw new Exception("Feedback device info default");
+            Console.WriteLine("PASS feedback dialog keeps submit button visible and device info selected");
             if (window.Icon == null || ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Icon == null) throw new Exception("Missing application/tray icon");
             Console.WriteLine("PASS centered heart footer and bundled window/tray icons");
             using (var iconPixels = ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Icon!.ToBitmap())
