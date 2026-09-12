@@ -10,6 +10,7 @@
 ## Composition
 
 - **Structure:** One focused usage panel with quota rows, status, actions, and attribution. Each element exists to support checking usage or controlling the widget.
+- **Reset context:** Each quota row shows its next reset in local time so users can decide when to resume work without opening another page.
 - **Dock:** A narrow CODEX handle expands on hover or keyboard activation. This keeps the resting widget unobtrusive while preserving a direct path to usage.
 - **Controls:** Text labels describe actions. The gear icon means settings because it is the standard Windows settings affordance.
 - **Feedback:** A native dialog keeps submission inside the app. Device info disclosure is visible beside its opt-out checkbox.

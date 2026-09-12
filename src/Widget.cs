@@ -176,8 +176,9 @@ public sealed class Widget : Window
             track.ColumnDefinitions.Add(new ColumnDefinition());
             track.Children.Add(new Border { Background = Foreground });
             card.Children.Add(track);
-            var resetText = settings.Layout == "Terperinci" ? Text("") : null;
-            if (resetText != null) card.Children.Add(resetText);
+            var resetText = Text("", 10);
+            resetText.Margin = new Thickness(0, 0, 0, 0);
+            card.Children.Add(resetText);
             usageRows.Add((valueText, track, resetText));
             body.Children.Add(card);
         }
@@ -231,7 +232,7 @@ public sealed class Widget : Window
             var percent = item.Remaining ?? 0;
             row.Track.ColumnDefinitions[0].Width = new GridLength(percent, GridUnitType.Star);
             row.Track.ColumnDefinitions[1].Width = new GridLength(100 - percent, GridUnitType.Star);
-            if (row.Reset != null) row.Reset.Text = item.Reset is { } reset ? $"Reset {reset.ToLocalTime().ToString("ddd, dd MMM · HH:mm", System.Globalization.CultureInfo.GetCultureInfo("en-US"))}" : "Reset time unavailable";
+            if (row.Reset != null) row.Reset.Text = item.Reset is { } reset ? $"Next reset: {reset.ToLocalTime().ToString("ddd, dd MMM · HH:mm", System.Globalization.CultureInfo.GetCultureInfo("en-US"))}" : "Next reset unavailable";
         }
     }
     private void PositionDock()

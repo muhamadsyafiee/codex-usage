@@ -75,6 +75,10 @@ internal static class Program
             if (!children.SequenceEqual(panel.Children.Cast<UIElement>()) || window.Width != width || window.SizeToContent != sizeMode) throw new Exception("Refresh replaced controls or changed geometry");
             var quotaPanel = (System.Windows.Controls.StackPanel)children[2];
             if (!((System.Windows.Controls.TextBlock)quotaPanel.Children[1]).Text.StartsWith("42%")) throw new Exception("Usage value did not refresh");
+            rows[0] = rows[0] with { Reset = DateTimeOffset.UtcNow.AddHours(2) };
+            type.GetMethod("Render", flags)!.Invoke(window, null);
+            if (!((System.Windows.Controls.TextBlock)quotaPanel.Children[3]).Text.StartsWith("Next reset:")) throw new Exception("Next reset did not refresh");
+            Console.WriteLine("PASS next reset time is shown per quota");
             Console.WriteLine("PASS refresh updates values without replacing controls or window geometry");
             type.GetField("settings", flags)!.SetValue(window, new Preferences { Dock = "Kiri" });
             type.GetField("expanded", flags)!.SetValue(window, false);
