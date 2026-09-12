@@ -1,5 +1,37 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Package Name="Codex Usage Widget" Manufacturer="Codex Usage Widget" Version="1.3.0" UpgradeCode="766915ED-C573-4E04-A82B-9AEC869568A9" Scope="perUser">
+  <Package Name="Codex Usage Widget" Manufacturer="Codex Usage Widget" Version="1.3.1" UpgradeCode="766915ED-C573-4E04-A82B-9AEC869568A9" Scope="perUser">
+    <Icon Id="ProductIcon" SourceFile="assets/app.ico" />
+    <Property Id="ARPPRODUCTICON" Value="ProductIcon" />
+    <Binary Id="LogoBitmap" SourceFile="assets/installer-logo.bmp" />
+    <Property Id="DefaultUIFont" Value="NormalFont" />
+    <UI>
+      <TextStyle Id="NormalFont" FaceName="Segoe UI" Size="9" />
+      <TextStyle Id="TitleFont" FaceName="Segoe UI" Size="16" Bold="yes" />
+      <Dialog Id="WelcomeDlg" Width="370" Height="240" Title="Codex Usage Widget Setup">
+        <Control Id="Logo" Type="Bitmap" X="15" Y="30" Width="130" Height="130" Text="LogoBitmap" TabSkip="yes" />
+        <Control Id="Title" Type="Text" X="160" Y="32" Width="195" Height="48" Text="{\TitleFont}Codex Usage Widget" />
+        <Control Id="Description" Type="Text" X="160" Y="88" Width="190" Height="65" Text="Your Codex usage, at a glance.&#13;&#10;&#13;&#10;Install version [ProductVersion]. The widget opens when setup completes." />
+        <Control Id="Credit" Type="Text" X="110" Y="179" Width="245" Height="18" Text="Made by Syafiee Anis · 2026" />
+        <Control Id="Install" Type="PushButton" X="210" Y="210" Width="70" Height="18" Default="yes" Text="&amp;Install">
+          <Publish Event="EndDialog" Value="Return" />
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="285" Y="210" Width="70" Height="18" Cancel="yes" Text="Cancel">
+          <Publish Event="EndDialog" Value="Exit" />
+        </Control>
+      </Dialog>
+      <Dialog Id="ProgressDlg" Width="370" Height="240" Title="Installing Codex Usage Widget" Modeless="yes">
+        <Control Id="Logo" Type="Bitmap" X="15" Y="30" Width="130" Height="130" Text="LogoBitmap" TabSkip="yes" />
+        <Control Id="Title" Type="Text" X="160" Y="40" Width="190" Height="45" Text="{\TitleFont}Installing…" TabSkip="no" />
+        <Control Id="Status" Type="Text" X="160" Y="95" Width="190" Height="45" Text="Please wait while setup installs Codex Usage Widget." />
+        <Control Id="Progress" Type="ProgressBar" X="15" Y="190" Width="340" Height="12" ProgressBlocks="yes">
+          <Subscribe Event="SetProgress" Attribute="Progress" />
+        </Control>
+      </Dialog>
+      <InstallUISequence>
+        <Show Dialog="WelcomeDlg" Before="ProgressDlg" Condition="NOT Installed AND NOT REMOVE" />
+        <Show Dialog="ProgressDlg" Before="ExecuteAction" Condition="NOT Installed AND NOT REMOVE" />
+      </InstallUISequence>
+    </UI>
     <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="medium" />
     <CustomAction Id="LaunchWidget" Directory="INSTALLFOLDER" ExeCommand="&quot;[INSTALLFOLDER]CodexUsage.exe&quot; --after-update" Return="asyncNoWait" />
@@ -10,8 +42,8 @@
       <Directory Id="INSTALLFOLDER" Name="CodexUsageWidget">
         <Files Include="$(var.PublishDir)\**" />
         <Component Id="Shortcuts" Guid="F1F08012-538C-4D8A-81C2-38CD610A134C">
-          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Codex Usage Widget" Target="[INSTALLFOLDER]CodexUsage.exe" WorkingDirectory="INSTALLFOLDER" />
-          <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="Codex Usage Widget" Target="[INSTALLFOLDER]CodexUsage.exe" WorkingDirectory="INSTALLFOLDER" />
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Codex Usage Widget" Target="[INSTALLFOLDER]CodexUsage.exe" WorkingDirectory="INSTALLFOLDER" Icon="ProductIcon" />
+          <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="Codex Usage Widget" Target="[INSTALLFOLDER]CodexUsage.exe" WorkingDirectory="INSTALLFOLDER" Icon="ProductIcon" />
           <RegistryValue Root="HKCU" Key="Software\CodexUsageWidget" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
         </Component>
       </Directory>

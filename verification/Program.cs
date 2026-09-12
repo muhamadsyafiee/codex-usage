@@ -34,6 +34,10 @@ internal static class Program
             if (Math.Abs(window.Opacity - 0.42) > 0.001) throw new Exception("Custom opacity");
             Console.WriteLine("PASS WPF custom opacity");
             var panel = (System.Windows.Controls.StackPanel)type.GetField("body", flags)!.GetValue(window)!;
+            var footer = panel.Children.OfType<System.Windows.Controls.TextBlock>().Last();
+            if (footer.Text != "Made with ♥ by Syafiee Anis @ 2026" || footer.TextAlignment != TextAlignment.Center) throw new Exception("Footer text/alignment");
+            if (window.Icon == null || ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Icon == null) throw new Exception("Missing application/tray icon");
+            Console.WriteLine("PASS centered heart footer and bundled window/tray icons");
             var rows = new List<UsageWindow> { new("Codex", "5 hours", 75, null, "codex") };
             type.GetField("windows", flags)!.SetValue(window, rows);
             type.GetField("loggedIn", flags)!.SetValue(window, true);
@@ -60,6 +64,7 @@ internal static class Program
         finally
         {
             ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Dispose();
+            ((System.Drawing.Icon)type.GetField("trayIcon", flags)!.GetValue(window)!).Dispose();
             ((CodexClient)type.GetField("client", flags)!.GetValue(window)!).Dispose();
         }
     }

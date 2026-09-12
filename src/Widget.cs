@@ -28,6 +28,7 @@ public sealed class Widget : Window
     private readonly CodexClient client = new();
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMinutes(1) };
     private readonly System.Windows.Forms.NotifyIcon tray;
+    private readonly System.Drawing.Icon trayIcon;
     private readonly StackPanel body = new();
     private readonly string settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CodexUsage", "settings.json");
     private Preferences settings = new();
@@ -52,6 +53,10 @@ public sealed class Widget : Window
     {
         try { if (File.Exists(settingsPath)) settings = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(settingsPath)) ?? new(); } catch { }
         Title = "Codex Usage"; WindowStyle = WindowStyle.None; ResizeMode = ResizeMode.NoResize;
+        var iconUri = new Uri("pack://application:,,,/CodexUsage;component/Assets/app.ico");
+        Icon = System.Windows.Media.Imaging.BitmapFrame.Create(iconUri);
+        using (var iconStream = System.Windows.Application.GetResourceStream(iconUri)!.Stream)
+        using (var sourceIcon = new System.Drawing.Icon(iconStream)) trayIcon = (System.Drawing.Icon)sourceIcon.Clone();
         AllowsTransparency = true;
         SizeToContent = SizeToContent.Height; FontFamily = new System.Windows.Media.FontFamily("Segoe UI");
         Topmost = settings.Topmost; Left = Math.Clamp(settings.Left, SystemParameters.VirtualScreenLeft, Math.Max(SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenWidth - 420));
@@ -76,7 +81,7 @@ public sealed class Widget : Window
         };
         MouseRightButtonUp += (_, _) => ShowMenu();
         SizeChanged += (_, _) => PositionDock();
-        tray = new System.Windows.Forms.NotifyIcon { Icon = System.Drawing.SystemIcons.Application, Text = "Codex Usage", Visible = true };
+        tray = new System.Windows.Forms.NotifyIcon { Icon = trayIcon, Text = "Codex Usage", Visible = true };
         tray.DoubleClick += (_, _) => Dispatcher.Invoke(Reveal);
         var menu = new System.Windows.Forms.ContextMenuStrip();
         menu.Items.Add("Open widget", null, (_, _) => Dispatcher.Invoke(Reveal));
@@ -95,7 +100,7 @@ public sealed class Widget : Window
         });
         updateTimer.Tick += async (_, _) => await CheckUpdate(false);
         Loaded += async (_, _) => { ShowInTaskbar = !Docked; UpdateDockArea(); PositionDock(); await Refresh(); timer.Start(); updateTimer.Start(); await CheckUpdate(false); };
-        Closed += (_, _) => { timer.Stop(); updateTimer.Stop(); collapseTimer.Stop(); Save(); tray.Dispose(); client.Dispose(); System.Windows.Application.Current.Shutdown(); };
+        Closed += (_, _) => { timer.Stop(); updateTimer.Stop(); collapseTimer.Stop(); Save(); tray.Dispose(); trayIcon.Dispose(); client.Dispose(); System.Windows.Application.Current.Shutdown(); };
         Render();
     }
     private void Save()
@@ -181,6 +186,11 @@ public sealed class Widget : Window
         controls.Children.Add(Action("Refresh", () => Refresh()));
         controls.Children.Add(Action("···", () => { ShowMenu(); return Task.CompletedTask; }));
         controls.Children.Add(Action("Hide", () => { ShowInTaskbar = false; Hide(); return Task.CompletedTask; })); body.Children.Add(controls);
+        var footer = Text("Made with ♥ by Syafiee Anis @ 2026", 11);
+        footer.TextAlignment = TextAlignment.Center;
+        footer.Margin = new Thickness(0, 14, 0, 0);
+        System.Windows.Automation.AutomationProperties.SetName(footer, "Made with love by Syafiee Anis at 2026");
+        body.Children.Add(footer);
         UpdateReadings();
         PositionDock();
     }

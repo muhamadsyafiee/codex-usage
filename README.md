@@ -6,7 +6,7 @@ Windows 11 x64 desktop widget, written in WPF. Black and white themes; Compact, 
 
 Download the [Windows 11 x64 MSI installer](https://github.com/muhamadsyafiee/codex-usage/releases/latest). Release assets include the installer and its SHA-256 checksum. Exit the existing app before upgrading.
 
-Run `dist/CodexUsageWidget-1.3.0-x64.msi`, then open **Codex Usage Widget** from Start. Select **Sign in** and finish the official ChatGPT browser login. Remaining limits appear automatically. Use **···** to change layout/theme or sign out. **Hide** hides to the tray; double-click the tray icon to restore. **Exit** exits.
+Run `dist/CodexUsageWidget-1.3.1-x64.msi`, then open **Codex Usage Widget** from Start. Select **Sign in** and finish the official ChatGPT browser login. Remaining limits appear automatically. Use **···** to change layout/theme or sign out. **Hide** hides to the tray; double-click the tray icon to restore. **Exit** exits.
 
 Installer includes .NET and the official Codex CLI 0.154.0. No Node.js or separate Codex install is required. Internet and a ChatGPT account with available Codex limits are required. Installer is unsigned.
 
@@ -41,3 +41,7 @@ Authentication completion and account-backed usage must be checked with an inter
 English is the default UI language. Codex 5-hour usage appears first, then Codex weekly usage, then GPT reserve when returned by the server; other buckets follow. No missing quotas are fabricated. Existing saved layout and dock choices remain compatible.
 
 Minute refreshes update existing text and progress bars without rebuilding controls or resetting the dock size. A collapsed dock keeps the same tab through background account/data changes. The opacity menu displays the saved percentage beside its slider; the expanded dock remains opaque for readability. Hidden and docked windows do not appear on the taskbar. Only an open Floating widget has a taskbar entry; the tray icon stays available to reopen it.
+
+## Branding (v1.3.1)
+
+The approved C logo is bundled into the installer welcome/progress screens, application executable, taskbar, notification tray, Start/desktop shortcuts and installed-apps entry. The expanded widget includes the centered attribution: "Made with ♥ by Syafiee Anis @ 2026". Source artwork and Windows icon variants are in `assets/`.
