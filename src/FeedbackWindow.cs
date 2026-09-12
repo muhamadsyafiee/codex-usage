@@ -156,6 +156,8 @@ public sealed class FeedbackWindow : Window
         {
             await FeedbackService.SubmitAsync(feedbackBox.Text, deviceInfo.IsChecked == true);
             statusText.Text = "Feedback sent. Thank you.";
+            await Task.Delay(700);
+            if (IsVisible) Close();
         }
         catch
         {
