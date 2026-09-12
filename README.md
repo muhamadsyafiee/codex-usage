@@ -4,6 +4,8 @@ Windows 11 x64 desktop widget, written in WPF. Black and white themes; Compact, 
 
 ## Install
 
+Download the [Windows 11 x64 MSI installer](https://github.com/muhamadsyafiee/codex-usage/releases/latest). Release assets include the installer and its SHA-256 checksum. Exit the existing app before upgrading.
+
 Run `dist/CodexUsageWidget-1.1.0-x64.msi`, then open **Codex Usage Widget** from Start. Select **Log masuk** and finish the official ChatGPT browser login. Remaining limits appear automatically. Use **···** to change layout/theme or sign out. **Sorok** hides to the tray; double-click the tray icon to restore. **Keluar** exits.
 
 Installer includes .NET and the official Codex CLI 0.154.0. No Node.js or separate Codex install is required. Internet and a ChatGPT account with available Codex limits are required. Installer is unsigned.
