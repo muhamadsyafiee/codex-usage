@@ -6,6 +6,7 @@ public partial class App : System.Windows.Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
         mutex = new Mutex(true, "Local\\CodexUsageWidget", out var first);
         if (!first) { Shutdown(); return; }
         var widget = new Widget();

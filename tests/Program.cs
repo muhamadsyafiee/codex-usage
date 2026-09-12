@@ -4,9 +4,9 @@ static List<UsageWindow> Parse(string json) => Usage.Parse(JsonDocument.Parse(js
 static void Check(bool value, string name) { if (!value) throw new Exception(name); Console.WriteLine("PASS " + name); }
 var values = Parse("""{"rateLimitsByLimitId":{"codex":{"primary":{"usedPercent":25,"windowDurationMins":300,"resetsAt":1800000000},"secondary":{"usedPercent":105,"windowDurationMins":10080,"resetsAt":null}},"extra":{"primary":{"usedPercent":-5}}},"rateLimits":{"primary":{"usedPercent":99}}}""");
 Check(values.Count == 3, "Prefer all named buckets over legacy");
-Check(values[0].Remaining == 75 && values[0].Label == "5 jam", "Calculate remaining and duration");
+Check(values[0].Remaining == 75 && values[0].Label == "5 hours", "Calculate remaining and duration");
 Check(values[1].Remaining == 0 && values[2].Remaining == 100, "Clamp remaining bounds");
-Check(values[1].Label == "Mingguan" && values[1].Reset == null, "Weekly and null reset");
+Check(values[1].Label == "Weekly" && values[1].Reset == null, "Weekly and null reset");
 Check(values[0].Reset?.ToUnixTimeSeconds() == 1800000000, "Reset uses seconds");
 Check(Parse("""{"rateLimits":{"primary":{"usedPercent":null,"windowDurationMins":null,"resetsAt":null},"secondary":null}}""")[0].Remaining == null, "Unknown is not zero");
 Check(Parse("""{"rateLimits":null}""").Count == 0, "Absent limits");
@@ -39,3 +39,6 @@ Check(ReadRelease(release.Replace("SHA256-1.3.0.txt", "missing.txt"), "1.2.0") =
 var rejected = false;
 try { ReadRelease(release.Replace("https://github.com/", "https://example.com/"), "1.2.0"); } catch (System.IO.IOException) { rejected = true; }
 Check(rejected, "Reject assets outside configured repository");
+var reordered = Parse("""{"rateLimitsByLimitId":{"z":{"limitName":"Other","primary":{"usedPercent":1}},"gpt_reserve":{"limitName":"GPT reserve","primary":{"usedPercent":2}},"codex":{"primary":{"usedPercent":3,"windowDurationMins":300},"secondary":{"usedPercent":4,"windowDurationMins":10080}}}}""");
+Check(reordered.Select(w => w.BucketId).SequenceEqual(new[] { "codex", "codex", "gpt_reserve", "z" }), "Codex five-hour and weekly precede GPT reserve regardless of response order");
+Check(reordered[0].Label == "5 hours" && reordered[1].Label == "Weekly", "English duration labels");

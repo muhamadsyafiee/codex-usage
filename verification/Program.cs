@@ -33,6 +33,29 @@ internal static class Program
             type.GetMethod("Render", flags)!.Invoke(window, null);
             if (Math.Abs(window.Opacity - 0.42) > 0.001) throw new Exception("Custom opacity");
             Console.WriteLine("PASS WPF custom opacity");
+            var panel = (System.Windows.Controls.StackPanel)type.GetField("body", flags)!.GetValue(window)!;
+            var rows = new List<UsageWindow> { new("Codex", "5 hours", 75, null, "codex") };
+            type.GetField("windows", flags)!.SetValue(window, rows);
+            type.GetField("loggedIn", flags)!.SetValue(window, true);
+            type.GetMethod("Render", flags)!.Invoke(window, null);
+            var children = panel.Children.Cast<UIElement>().ToArray();
+            var width = window.Width;
+            var sizeMode = window.SizeToContent;
+            rows[0] = rows[0] with { Remaining = 42 };
+            type.GetMethod("Render", flags)!.Invoke(window, null);
+            if (!children.SequenceEqual(panel.Children.Cast<UIElement>()) || window.Width != width || window.SizeToContent != sizeMode) throw new Exception("Refresh replaced controls or changed geometry");
+            var quotaPanel = (System.Windows.Controls.StackPanel)children[2];
+            if (!((System.Windows.Controls.TextBlock)quotaPanel.Children[1]).Text.StartsWith("42%")) throw new Exception("Usage value did not refresh");
+            Console.WriteLine("PASS refresh updates values without replacing controls or window geometry");
+            type.GetField("settings", flags)!.SetValue(window, new Preferences { Dock = "Kiri" });
+            type.GetField("expanded", flags)!.SetValue(window, false);
+            type.GetMethod("Render", flags)!.Invoke(window, null);
+            var tab = panel.Children[0];
+            type.GetField("loggedIn", flags)!.SetValue(window, false);
+            rows.Clear();
+            type.GetMethod("Render", flags)!.Invoke(window, null);
+            if (!ReferenceEquals(tab, panel.Children[0]) || window.Width != 32 || window.Height != 112 || window.ShowInTaskbar) throw new Exception("Background auth change disturbed collapsed dock");
+            Console.WriteLine("PASS dock remains collapsed and absent from taskbar through background changes");
         }
         finally
         {

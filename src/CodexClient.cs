@@ -18,7 +18,7 @@ public sealed class CodexClient : IDisposable
         var executable = Path.Combine(AppContext.BaseDirectory, "codex.exe");
         var info = new ProcessStartInfo(executable, "app-server") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true };
         info.Environment["CODEX_HOME"] = Home;
-        process = Process.Start(info) ?? throw new IOException("Codex gagal dimulakan.");
+        process = Process.Start(info) ?? throw new IOException("Could not start Codex.");
         _ = process.StandardError.ReadToEndAsync();
         _ = Read(process);
         await Call("initialize", new { clientInfo = new { name = "codex_usage_widget", version = "1.0.0" } });
@@ -43,7 +43,7 @@ public sealed class CodexClient : IDisposable
         catch (Exception) { }
         finally
         {
-            foreach (var pair in pending) if (pending.TryRemove(pair.Key, out var item)) item.TrySetException(new IOException("Sambungan Codex terputus. Cuba refresh."));
+            foreach (var pair in pending) if (pending.TryRemove(pair.Key, out var item)) item.TrySetException(new IOException("Codex disconnected. Try refreshing."));
         }
     }
     private async Task Send(object value)

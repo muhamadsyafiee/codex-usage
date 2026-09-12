@@ -26,7 +26,7 @@ public sealed class UpdateService
     public async Task<ReleaseUpdate?> Check()
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/muhamadsyafiee/codex-usage/releases/latest");
-        request.Headers.UserAgent.ParseAdd("CodexUsageWidget/1.2.0");
+        request.Headers.UserAgent.ParseAdd($"CodexUsageWidget/{Current}");
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         using var response = await Http.SendAsync(request, timeout.Token);
         response.EnsureSuccessStatusCode();
