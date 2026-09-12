@@ -38,7 +38,9 @@ internal static class Program
             if (footer.Text != "Made with ♥ by Syafiee Anis @ 2026" || footer.TextAlignment != TextAlignment.Center) throw new Exception("Footer text/alignment");
             var settingsControl = panel.Children.OfType<System.Windows.Controls.WrapPanel>().Single().Children.OfType<System.Windows.Controls.Button>().FirstOrDefault(b => b.Content?.ToString() == "⚙");
             if (settingsControl == null || System.Windows.Automation.AutomationProperties.GetName(settingsControl) != "Settings") throw new Exception("Missing accessible settings gear");
-            Console.WriteLine("PASS settings gear icon and accessible name");
+            var feedbackControl = panel.Children.OfType<System.Windows.Controls.WrapPanel>().Single().Children.OfType<System.Windows.Controls.Button>().FirstOrDefault(b => b.Content?.ToString() == "Feedback");
+            if (feedbackControl == null || System.Windows.Automation.AutomationProperties.GetName(feedbackControl) != "Send feedback") throw new Exception("Missing accessible feedback button");
+            Console.WriteLine("PASS settings gear and feedback controls have accessible names");
             if (window.Icon == null || ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Icon == null) throw new Exception("Missing application/tray icon");
             Console.WriteLine("PASS centered heart footer and bundled window/tray icons");
             using (var iconPixels = ((System.Windows.Forms.NotifyIcon)type.GetField("tray", flags)!.GetValue(window)!).Icon!.ToBitmap())

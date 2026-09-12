@@ -6,13 +6,13 @@ Windows 11 x64 desktop widget, written in WPF. Black and white themes; Compact, 
 
 Download the [Windows 11 x64 MSI installer](https://github.com/muhamadsyafiee/codex-usage/releases/latest). Release assets include the installer and its SHA-256 checksum. Exit the existing app before upgrading.
 
-Run `dist/CodexUsageWidget-1.3.2-x64.msi`, then open **Codex Usage Widget** from Start. Select **Sign in** and finish the official ChatGPT browser login. Remaining limits appear automatically. Use **···** to change layout/theme or sign out. **Hide** hides to the tray; double-click the tray icon to restore. **Exit** exits.
+Run `dist/CodexUsageWidget-1.3.4-x64.msi`, then open **Codex Usage Widget** from Start. Select **Sign in** and finish the official ChatGPT browser login. Remaining limits appear automatically. Use **⚙ Settings** to change layout/theme or sign out. **Hide** hides to the tray; double-click the tray icon to restore. **Exit** exits.
 
 Installer includes .NET and the official Codex CLI 0.154.0. No Node.js or separate Codex install is required. Internet and a ChatGPT account with available Codex limits are required. Installer is unsigned.
 
 ## Dock mode (v1.1)
 
-Open **··· → Dock position** and choose **Left**, **Right**, **Top**, or **Bottom**. A small CODEX tab stays at the chosen edge. Hover to reveal usage; moving away collapses the panel after 450 ms. Right-click the tab to change its settings. Choose **Floating** to restore the floating position. Dock mode stays on top and uses the monitor work area, keeping clear of the taskbar. To move to another monitor, switch to Floating, drag there, then dock again. Layout, theme, login and floating position survive upgrades. Exit the old app before running the new MSI.
+Open **⚙ Settings → Dock position** and choose **Left**, **Right**, **Top**, or **Bottom**. A small CODEX tab stays at the chosen edge. Hover to reveal usage; moving away collapses the panel after 450 ms. Right-click the tab to change its settings. Choose **Floating** to restore the floating position. Dock mode stays on top and uses the monitor work area, keeping clear of the taskbar. To move to another monitor, switch to Floating, drag there, then dock again. Layout, theme, login and floating position survive upgrades. Exit the old app before running the new MSI.
 
 ## Dock movement, opacity and updates (v1.2)
 
@@ -38,7 +38,7 @@ Authentication completion and account-backed usage must be checked with an inter
 
 ## Download tracking
 
-GitHub counts downloads per Release asset. Run `./scripts/Get-DownloadStats.ps1` in PowerShell to list MSI downloads for every release and totals. Run `./scripts/Get-DownloadStats.ps1 -Tag v1.3.3` for one release. The report counts MSI downloads, not installs or active users. The checksum asset is reported in the all-asset total. This app collects no usage telemetry.
+GitHub counts downloads per Release asset. Run `./scripts/Get-DownloadStats.ps1` in PowerShell to list MSI downloads for every release and totals. Run `./scripts/Get-DownloadStats.ps1 -Tag v1.3.4` for one release. The report counts MSI downloads, not installs or active users. The checksum asset is reported in the all-asset total. This app collects no usage telemetry.
 
 ## Stable background refresh (v1.3)
 
@@ -50,4 +50,8 @@ Minute refreshes update existing text and progress bars without rebuilding contr
 
 The approved C logo is bundled into the installer welcome/progress screens, application executable, taskbar, notification tray, Start/desktop shortcuts and installed-apps entry. The expanded widget includes the centered attribution: "Made with ♥ by Syafiee Anis @ 2026". Source artwork and Windows icon variants are in `assets/`.
 
-Version 1.3.3 uses a friendly black C mascot with eyes and waving hands. An opaque white backing keeps it visible on dark Windows surfaces; the bold black body remains visible on light ones. The settings control uses a gear icon. The original white C assets are retained as history.
+Version 1.3.4 uses a friendly black C mascot with eyes and waving hands. An opaque white backing keeps it visible on dark Windows surfaces; the bold black body remains visible on light ones. The settings control uses a gear icon. The original white C assets are retained as history.
+
+## Feedback
+
+Select **Feedback** inside the widget to send a message without opening a browser. The app posts to the [Feedback Codex Usage form](https://forms.gle/shW2FFNXGFDVAbuZ7) and can append Windows version, architecture, app version and .NET runtime details to the same response. Device info is selected by default and can be unchecked; no name, hostname or files are sent.

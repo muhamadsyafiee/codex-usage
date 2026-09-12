@@ -42,3 +42,5 @@ Check(rejected, "Reject assets outside configured repository");
 var reordered = Parse("""{"rateLimitsByLimitId":{"z":{"limitName":"Other","primary":{"usedPercent":1}},"gpt_reserve":{"limitName":"GPT reserve","primary":{"usedPercent":2}},"codex":{"primary":{"usedPercent":3,"windowDurationMins":300},"secondary":{"usedPercent":4,"windowDurationMins":10080}}}}""");
 Check(reordered.Select(w => w.BucketId).SequenceEqual(new[] { "codex", "codex", "gpt_reserve", "z" }), "Codex five-hour and weekly precede GPT reserve regardless of response order");
 Check(reordered[0].Label == "5 hours" && reordered[1].Label == "Weekly", "English duration labels");
+Check(FeedbackService.FormResponseUrl.Contains("docs.google.com/forms/d/e/") && FeedbackService.FeedbackEntry == "entry.412582170", "Feedback form endpoint is configured");
+Check(FeedbackService.BuildDeviceInfo().Contains("Architecture:") && FeedbackService.BuildDeviceInfo().Contains("App version:"), "Feedback device info is minimal and labeled");

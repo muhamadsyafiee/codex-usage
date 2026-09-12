@@ -184,6 +184,9 @@ public sealed class Widget : Window
         var controls = new WrapPanel();
         if (!loggedIn) controls.Children.Add(Action(loginId == null ? "Sign in" : "Cancel sign-in", Login));
         controls.Children.Add(Action("Refresh", () => Refresh()));
+        var feedbackButton = Action("Feedback", OpenFeedback);
+        System.Windows.Automation.AutomationProperties.SetName(feedbackButton, "Send feedback");
+        controls.Children.Add(feedbackButton);
         var settingsButton = Action("⚙", () => { ShowMenu(); return Task.CompletedTask; });
         settingsButton.ToolTip = "Settings";
         System.Windows.Automation.AutomationProperties.SetName(settingsButton, "Settings");
@@ -198,6 +201,12 @@ public sealed class Widget : Window
         body.Children.Add(footer);
         UpdateReadings();
         PositionDock();
+    }
+    private Task OpenFeedback()
+    {
+        var dialog = new FeedbackWindow(settings.Light) { Owner = this };
+        dialog.ShowDialog();
+        return Task.CompletedTask;
     }
     private void UpdateDockArea()
     {
