@@ -1,5 +1,5 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Package Name="Codex Usage Widget" Manufacturer="Codex Usage Widget" Version="1.3.7" UpgradeCode="766915ED-C573-4E04-A82B-9AEC869568A9" Scope="perUser">
+  <Package Name="Codex Usage Widget" Manufacturer="Codex Usage Widget" Version="1.3.8" UpgradeCode="766915ED-C573-4E04-A82B-9AEC869568A9" Scope="perUser">
     <Icon Id="ProductIconMascot" SourceFile="assets/app-mascot.ico" />
     <Property Id="ARPPRODUCTICON" Value="ProductIconMascot" />
     <Binary Id="LogoBitmap" SourceFile="assets/installer-mascot.bmp" />

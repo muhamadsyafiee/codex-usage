@@ -12,6 +12,7 @@ internal static class Program
         var type = typeof(Widget);
         try
         {
+            SettingsChecks.Run();
             foreach (var edge in new[] { "Kiri", "Kanan", "Atas", "Bawah" })
             {
                 type.GetField("settings", flags)!.SetValue(window, new Preferences { Dock = edge });

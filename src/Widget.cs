@@ -8,8 +8,6 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Button = System.Windows.Controls.Button;
 using Brushes = System.Windows.Media.Brushes;
-using ContextMenu = System.Windows.Controls.ContextMenu;
-using MenuItem = System.Windows.Controls.MenuItem;
 namespace CodexUsage;
 public sealed class Preferences
 {
@@ -280,9 +278,13 @@ public sealed class Widget : Window
     {
         ShowInTaskbar = !Docked; Show(); expanded = true; Render(); Activate();
     }
-    private async Task CheckUpdate(bool manual)
+    private async Task CheckUpdate(bool manual, bool reportFailure = false)
     {
-        if (checkingUpdate || installing) return;
+        if (checkingUpdate || installing)
+        {
+            if (reportFailure) throw new InvalidOperationException("An update operation is already running.");
+            return;
+        }
         checkingUpdate = true;
         if (manual) { status = "Checking for updates…"; Render(); }
         try
@@ -294,7 +296,7 @@ public sealed class Widget : Window
             if (manual) { status = found == null ? "You are up to date." : $"Version {found.Version} is available."; Reveal(); }
             else Render();
         }
-        catch { if (manual) { status = "Update check failed. Check your connection and try again."; Reveal(); } }
+        catch { if (reportFailure) throw; if (manual) { status = "Update check failed. Check your connection and try again."; Reveal(); } }
         finally { checkingUpdate = false; }
     }
     private async Task InstallUpdate()
@@ -312,61 +314,30 @@ public sealed class Widget : Window
         catch { status = "Update failed. Try again from the update menu."; }
         finally { installing = false; if (IsLoaded) Render(); }
     }
-    private static string EnglishLabel(string value) => value switch { "Bebas" => "Floating", "Kiri" => "Left", "Kanan" => "Right", "Atas" => "Top", "Bawah" => "Bottom", "Kompak" => "Compact", "Kad" => "Card", "Terperinci" => "Detailed", _ => value };
     private void ShowMenu()
     {
-        var menu = new ContextMenu();
+        if (menuOpen) return;
         menuOpen = true;
-        menu.Closed += (_, _) => { menuOpen = false; collapseTimer.Start(); };
-        var docking = new MenuItem { Header = "Dock position" };
-        foreach (var edge in new[] { "Bebas", "Kiri", "Kanan", "Atas", "Bawah" })
-        {
-            var option = new MenuItem { Header = EnglishLabel(edge), IsCheckable = true, IsChecked = settings.Dock == edge };
-            option.Click += (_, _) => SetDock(edge);
-            docking.Items.Add(option);
-        }
-        menu.Items.Add(docking);
-        var opacity = new MenuItem { Header = $"Opacity: {settings.WidgetOpacity:P0}" };
-        var opacityValue = new TextBlock { Text = $"{settings.WidgetOpacity:P0}", Margin = new Thickness(12, 6, 12, 0) };
-        var slider = new Slider { Minimum = 20, Maximum = 100, Value = settings.WidgetOpacity * 100, TickFrequency = 1, IsSnapToTickEnabled = true, Width = 180, Margin = new Thickness(12) };
-        slider.ValueChanged += (_, _) => { settings.WidgetOpacity = slider.Value / 100; Opacity = Docked && expanded ? 1 : settings.WidgetOpacity; opacityValue.Text = $"{slider.Value:0}%"; opacity.Header = $"Opacity: {slider.Value:0}%"; Save(); };
-        var opacityPanel = new StackPanel(); opacityPanel.Children.Add(opacityValue); opacityPanel.Children.Add(slider);
-        opacity.Items.Add(new MenuItem { Header = opacityPanel, StaysOpenOnClick = true }); menu.Items.Add(opacity);
-        var update = new MenuItem { Header = availableUpdate == null ? "Check for updates" : $"Update v{availableUpdate.Version}", IsEnabled = !installing };
-        update.Click += async (_, _) => { if (availableUpdate == null) await CheckUpdate(true); else await InstallUpdate(); }; menu.Items.Add(update);
-        foreach (var layout in new[] { "Kompak", "Kad", "Terperinci" })
-        {
-            var item = new MenuItem { Header = EnglishLabel(layout), IsCheckable = true, IsChecked = settings.Layout == layout };
-            item.Click += (_, _) => { settings.Layout = layout; Save(); Render(); }; menu.Items.Add(item);
-        }
-        var theme = new MenuItem { Header = "Light theme", IsCheckable = true, IsChecked = settings.Light };
-        theme.Click += (_, _) => { settings.Light = !settings.Light; Save(); Render(); }; menu.Items.Add(theme);
-        var pin = new MenuItem { Header = "Always on top", IsCheckable = true, IsChecked = Topmost, IsEnabled = !Docked };
-        pin.Click += (_, _) => { settings.Topmost = Topmost = !Topmost; Save(); }; menu.Items.Add(pin);
-        var startup = new MenuItem { Header = "Run at Windows login", IsCheckable = true, IsChecked = settings.RunAtWindowsLogin };
-        startup.Click += (_, _) =>
-        {
-            var enabled = !settings.RunAtWindowsLogin;
-            try
+        collapseTimer.Stop();
+        var dialog = new SettingsWindow(settings, account, loggedIn,
+            () => { Save(); Render(); }, SetDock,
+            () => availableUpdate == null ? "Check for updates" : $"Install v{availableUpdate.Version}",
+            async () =>
             {
-                StartupService.SetEnabled(enabled);
-                settings.RunAtWindowsLogin = enabled;
-                Save();
-            }
-            catch { status = "Could not update Windows login setting."; Render(); }
-        };
-        menu.Items.Add(startup);
-        var logout = new MenuItem { Header = "Sign out", IsEnabled = loggedIn };
-        logout.Click += async (_, _) =>
+                if (availableUpdate != null) { await InstallUpdate(); return status; }
+                await CheckUpdate(false, true);
+                return availableUpdate == null ? "You are up to date." : $"Version {availableUpdate.Version} is available.";
+            },
+            async () =>
         {
-            if (busy) return;
+            if (busy) throw new InvalidOperationException("Usage is refreshing. Try again shortly.");
             busy = true;
             try { await client.Call("account/logout"); loggedIn = false; windows.Clear(); account = "Not signed in"; status = "You have signed out."; }
-            catch { status = "Sign-out failed. Try again."; }
+            catch { status = "Sign-out failed. Try again."; throw; }
             finally { busy = false; Render(); }
-        }; menu.Items.Add(logout);
-        var exit = new MenuItem { Header = "Exit" }; exit.Click += (_, _) => Close(); menu.Items.Add(exit);
-        menu.IsOpen = true;
+        }, Close) { Owner = this, Icon = Icon };
+        try { dialog.ShowDialog(); }
+        finally { menuOpen = false; collapseTimer.Start(); }
     }
     private async Task Login()
     {

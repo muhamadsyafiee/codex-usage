@@ -6,17 +6,17 @@ Windows 11 x64 desktop widget, written in WPF. Black and white themes; Compact, 
 
 Download the [Windows 11 x64 MSI installer](https://github.com/muhamadsyafiee/codex-usage/releases/latest). Release assets include the installer and its SHA-256 checksum. Exit the existing app before upgrading.
 
-Run `dist/CodexUsageWidget-1.3.7-x64.msi`, then open **Codex Usage Widget** from Start. Select **Sign in** and finish the official ChatGPT browser login. Remaining limits appear automatically. Each quota shows its next reset time in your local timezone. Use **⚙ Settings** to change layout/theme or sign out. **Hide** hides to the tray; double-click the tray icon to restore. **Exit** exits.
+Run `dist/CodexUsageWidget-1.3.8-x64.msi`, then open **Codex Usage Widget** from Start. Select **Sign in** and finish the official ChatGPT browser login. Remaining limits appear automatically. Each quota shows its next reset time in your local timezone. Use **⚙ Settings** to change layout/theme or sign out. **Hide** hides to the tray; double-click the tray icon to restore. **Exit app** in Settings exits.
 
 Installer includes .NET and the official Codex CLI 0.154.0. No Node.js or separate Codex install is required. Internet and a ChatGPT account with available Codex limits are required. Installer is unsigned.
 
 ## Dock mode (v1.1)
 
-Open **⚙ Settings → Dock position** and choose **Left**, **Right**, **Top**, or **Bottom**. A small CODEX tab stays at the chosen edge. Hover to reveal usage; moving away collapses the panel after 450 ms. Right-click the tab to change its settings. Choose **Floating** to restore the floating position. Dock mode stays on top and uses the monitor work area, keeping clear of the taskbar. To move to another monitor, switch to Floating, drag there, then dock again. Layout, theme, login and floating position survive upgrades. Exit the old app before running the new MSI.
+Open **⚙ Settings → Dock** and choose **Left**, **Right**, **Top**, or **Bottom**. A small CODEX tab stays at the chosen edge. Hover to reveal usage; moving away collapses the panel after 450 ms. Right-click the tab to change its settings. Choose **Floating** to restore the floating position. Dock mode stays on top and uses the monitor work area, keeping clear of the taskbar. To move to another monitor, switch to Floating, drag there, then dock again. Layout, theme, login and floating position survive upgrades. Exit the old app before running the new MSI.
 
 ## Dock movement, opacity and updates (v1.2)
 
-Drag the CODEX heading along the selected screen edge to reposition the dock. Position is stored as a relative offset, so expansion and collapse keep the same anchor. Choose another edge through **Dock position**. Use **Opacity** in the menu to select 20–100%; the default is 70%.
+Drag the CODEX heading along the selected screen edge to reposition the dock. Position is stored as a relative offset, so expansion and collapse keep the same anchor. Choose another edge through **Settings → Dock**. Use **Settings → Appearance → Resting opacity** to select 20–100%; the default is 70%.
 
 The app checks this repository's latest stable GitHub Release at startup and every six hours. A tray notification, UPDATE tab and update button announce a newer version. **Check for updates** checks manually. Selecting Update downloads the x64 MSI and verifies its published SHA-256 checksum before opening the normal Windows Installer interface and exiting the widget. A successful interactive installation opens the widget automatically with its panel expanded. A cancelled or failed installation does not auto-launch; reopen the existing app from Start. Fully silent deployments do not launch UI.
 
@@ -44,7 +44,7 @@ GitHub counts downloads per Release asset. Run `./scripts/Get-DownloadStats.ps1`
 
 English is the default UI language. Codex 5-hour usage appears first, then Codex weekly usage, then GPT reserve when returned by the server; other buckets follow. No missing quotas are fabricated. Existing saved layout and dock choices remain compatible.
 
-Minute refreshes update existing text and progress bars without rebuilding controls or resetting the dock size. A collapsed dock keeps the same tab through background account/data changes. The opacity menu displays the saved percentage beside its slider; the expanded dock remains opaque for readability. Hidden and docked windows do not appear on the taskbar. Only an open Floating widget has a taskbar entry; the tray icon stays available to reopen it.
+Minute refreshes update existing text and progress bars without rebuilding controls or resetting the dock size. A collapsed dock keeps the same tab through background account/data changes. Settings displays the saved opacity percentage beside its slider; the expanded dock remains opaque for readability. Hidden and docked windows do not appear on the taskbar. Only an open Floating widget has a taskbar entry; the tray icon stays available to reopen it.
 
 ## Branding (v1.3.1)
 
@@ -57,3 +57,7 @@ Version 1.3.7 uses a friendly black C mascot with eyes and waving hands. An opaq
 Select **Feedback** inside the widget to send a message without opening a browser. The app posts to the [Feedback Codex Usage form](https://forms.gle/shW2FFNXGFDVAbuZ7) and can append Windows version, architecture, app version and .NET runtime details to the same response. Device info is selected by default and can be unchecked; no name, hostname or files are sent.
 
 Enable **⚙ Settings → Run at Windows login** to start the widget automatically after every Windows restart. The app checks for updates during each startup; background checks do not open a browser or interrupt the widget.
+
+## Settings window (v1.3.8)
+
+Settings opens a dedicated monochrome window with **Dock**, **Appearance**, **Windows & updates**, and **Account** sections. Dock, layout and theme choices are visible together; opacity shows its live percentage. Changes apply immediately. Always on top is locked on while docked and becomes editable in Floating mode. Startup failures restore the previous checkbox value; update and sign-out actions show progress and retry messages. The body scrolls on smaller displays while **Done** stays visible. Press **Escape** or select **Done** to close settings.
